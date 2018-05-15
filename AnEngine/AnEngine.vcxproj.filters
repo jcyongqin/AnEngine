@@ -139,12 +139,6 @@
     <ClInclude Include="BaseBehaviour.h">
       <Filter>Game\Behaviour</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentBehaviour.h">
-      <Filter>Game\Behaviour</Filter>
-    </ClInclude>
-    <ClInclude Include="VirtualBehaviour.h">
-      <Filter>Game\Behaviour</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Game\Component</Filter>
     </ClInclude>
@@ -201,6 +195,27 @@
     </ClInclude>
     <ClInclude Include="UICore.h">
       <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="DMath.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="onwind.h">
+      <Filter>UTIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.hpp">
+      <Filter>UTIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ManagedTask.hpp">
+      <Filter>UTIL</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>UTIL</Filter>
+    </ClInclude>
+    <ClInclude Include="Canvas.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -273,9 +288,6 @@
     <ClCompile Include="Screen.cpp">
       <Filter>UTIL</Filter>
     </ClCompile>
-    <ClCompile Include="DebugLog.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Driver.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -284,12 +296,6 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentBehaviour.cpp">
-      <Filter>Game\Behaviour</Filter>
-    </ClCompile>
-    <ClCompile Include="VirtualBehaviour.cpp">
-      <Filter>Game\Behaviour</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Game\Component</Filter>
@@ -336,6 +342,19 @@
     <ClCompile Include="UICore.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="DebugLog.cpp">
+      <Filter>UTIL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>UTIL</Filter>
+    </ClCompile>
+    <ClCompile Include="ManagedTask.cpp">
+      <Filter>UTIL</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>UTIL</Filter>
+    </ClCompile>
+    <ClCompile Include="Canvas.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="triangle_shaders.hlsl">

@@ -32,8 +32,8 @@ namespace AnEngine::Game
 		ClearFlags m_clearFlag;
 		Color m_clearColor;
 
-		RenderCore::Resource::ColorBuffer* m_colorBuffer;
-		RenderCore::Resource::DepthBuffer* m_depthBuffer;
+		//RenderCore::Resource::ColorBuffer* m_colorBuffer;
+		//RenderCore::Resource::DepthBuffer* m_depthBuffer;
 
 		RenderCore::Resource::MultiBuffer<2, RenderCore::Resource::ColorBuffer> m_colorBuffers;
 		RenderCore::Resource::MultiBuffer<2, RenderCore::Resource::DepthBuffer> m_depthBuffers;
@@ -53,17 +53,19 @@ namespace AnEngine::Game
 		virtual void Start() override;
 		virtual void OnActive() override;
 		virtual void Update() override;
-		virtual void AfterUpdate() override;
+		virtual void LateUpdate() override;
 		virtual void OnInvalid() override;
 		virtual void Destory() override;
 
 		void PostProcess();
 
 	public:
-		Camera(const std::wstring& name);
+		/*Camera(const std::wstring& name);
 		Camera(std::wstring&& name);
 		Camera(const std::wstring& name, ClearFlags clearFlag);
-		Camera(std::wstring&& name, ClearFlags clearFlag);
+		Camera(std::wstring&& name, ClearFlags clearFlag);*/
+		Camera();
+		Camera(ClearFlags clearFlag);
 		~Camera();
 
 		RenderCore::Resource::ColorBuffer* GetColorBuffer();

@@ -43,8 +43,8 @@ namespace AnEngine::Game
 
 		ThrowIfFailed(iList->Close());
 
-		ID3D12CommandList* ppList[] = { iList };
-		r_graphicsCard[0]->ExecuteSync(_countof(ppList), ppList);
+		//ID3D12CommandList* ppList[] = { iList };
+		//r_graphicsCard[0]->ExecuteSync(_countof(ppList), ppList);
 
 		GraphicsContext::Push(commandList, commandAllocator);
 	}
@@ -60,7 +60,7 @@ namespace AnEngine::Game
 		WaitForSingleObject(m_srvUavFenceEvent, INFINITE);
 	}
 
-	ParticlesRenderer::ParticlesRenderer(std::wstring&& name) : Renderer(name),
+	ParticlesRenderer::ParticlesRenderer() : Renderer(),
 		m_viewport(0.0f, 0.0f, static_cast<float>(Screen::GetInstance()->Width()), static_cast<float>(Screen::GetInstance()->Height())),
 		m_scissorRect(0, 0, static_cast<long>(Screen::GetInstance()->Width()), static_cast<long>(Screen::GetInstance()->Height()))
 	{
@@ -228,16 +228,17 @@ namespace AnEngine::Game
 
 		{
 			ThrowIfFailed(iList->Close(), R_GetGpuError);
-			ID3D12CommandList* ppCommandLists[] = { iList };
-			r_graphicsCard[0]->ExecuteSync(_countof(ppCommandLists), ppCommandLists);
+			//ID3D12CommandList* ppCommandLists[] = { iList };
+			//r_graphicsCard[0]->ExecuteSync(_countof(ppCommandLists), ppCommandLists);
 		}
 		{
 			ThrowIfFailed(cList->Close(), R_GetGpuError);
-			ID3D12CommandList* ppCommandList[] = { cList };
-			r_graphicsCard[0]->ExecuteSync(_countof(ppCommandList), ppCommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+			//ID3D12CommandList* ppCommandList[] = { cList };
+			//r_graphicsCard[0]->ExecuteSync(_countof(ppCommandList), ppCommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		}
 
-		m_fence = new Fence(r_graphicsCard[0]->GetCommandQueue());
+		//m_fence = new Fence(r_graphicsCard[0]->GetCommandQueue());
+		//m_fence = new Fence();
 		{
 			ThrowIfFailed(device->CreateFence(m_srvUavFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_srvUavFence)));
 			m_srvUavFenceValue++;
@@ -297,8 +298,8 @@ namespace AnEngine::Game
 		iList->ResourceBarrier(1, &renderTargetToCommon);
 		ThrowIfFailed(iList->Close());
 
-		ID3D12CommandList* ppcommandList[] = { iList };
-		r_graphicsCard[0]->ExecuteSync(_countof(ppcommandList), ppcommandList);
+		//ID3D12CommandList* ppcommandList[] = { iList };
+		//r_graphicsCard[0]->ExecuteSync(_countof(ppcommandList), ppcommandList);
 		//m_renderTarget->GetFence()->GpuSignal(0);
 		m_srvUavFenceValue++;
 		ThrowIfFailed(m_graphicsQueue->Signal(m_srvUavFence.Get(), m_srvUavFenceValue));
