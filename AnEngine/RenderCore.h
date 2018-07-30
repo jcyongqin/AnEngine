@@ -2,23 +2,22 @@
 #ifndef __RENDERCORE_H__
 #define __RENDERCORE_H__
 
-#include"onwind.h"
-#include"DX.h"
-#include<mutex>
-#include<atomic>
-#include"ColorBuffer.h"
-#include"DescriptorHeap.hpp"
-#include"RenderCoreConstants.h"
-#include"GraphicCard.h"
-#include"RootSignature.h"
+#include "onwind.h"
+#include "DX.h"
+#include <mutex>
+#include <atomic>
+#include "ColorBuffer.h"
+#include "DescriptorHeap.hpp"
+#include "RenderCoreConstants.h"
+#include "GraphicsCard.h"
+#include "GraphicsCard2D.h"
+#include "RootSignature.h"
 
 #if defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 #include <dxgi1_6.h>
 #else
 #include <dxgi1_4.h>	// For WARP
 #endif
-using namespace Microsoft::WRL;
-using namespace std;
 
 namespace AnEngine::RenderCore::Heap
 {
@@ -44,32 +43,27 @@ namespace AnEngine::RenderCore
 {
 	extern bool r_enableHDROutput;
 
-	namespace Private
-	{
-		extern ComPtr<IDXGIFactory4> r_dxgiFactory_cp;
-	}
-
-	extern vector<unique_ptr<GraphicsCard>> r_graphicsCard;
-	extern ComPtr<IDXGISwapChain3> r_swapChain_cp;
-	extern Resource::ColorBuffer* r_displayPlane[r_SwapChainBufferCount_const];
+	extern std::vector<std::unique_ptr<GraphicsCard>> r_graphicsCard;
+	extern std::unique_ptr<UI::GraphicsCard2D> r_graphicsCard2D;
+	//extern ComPtr<IDXGISwapChain3> r_swapChain_cp;
+	//extern Resource::ColorBuffer* r_displayPlane[r_SwapChainBufferCount_const];
 	extern uint32_t r_frameIndex;
-	extern RootSignature r_rootSignature;
+	//extern RootSignature r_rootSignature;
 #ifdef _WIN32
 	extern HWND r_hwnd;
 #endif // _WIN32
-	extern bool rrrr_runningFlag;
+	//extern bool rrrr_runningFlag;
 	extern std::function<void(void)> R_GetGpuError;
 
-	void InitializeRender(HWND hwnd, int graphicCardCount = 1, bool isStable = false);
+	procedure InitializeRender(HWND hwnd, int graphicCardCount = 1, bool isStable = false);
 
-	void CreateCommonState();
+	//procedure CreateCommonState();
 
+	procedure RenderColorBuffer(Resource::ColorBuffer* dstColorBuffer);
 
-	void RenderColorBuffer(Resource::ColorBuffer* dstColorBuffer);
+	procedure BlendBuffer(Resource::GpuResource* buffer);
 
-	void BlendBuffer(Resource::GpuResource* buffer);
-
-	//void ClearColorBuffer(Resource::ColorBuffer* destColorBuffer, )
+	procedure R_Present();
 }
 
 

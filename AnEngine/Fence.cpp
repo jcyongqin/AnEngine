@@ -1,10 +1,10 @@
-#include "Fence.h"
+#include "Fence.hpp"
 #include "RenderCore.h"
 #include "DTimer.h"
 
 namespace AnEngine::RenderCore
 {
-	Fence::Fence(ID3D12CommandQueue* targetQueue) : m_fenceValue(0), m_curFenceValue(0)
+	/*Fence::Fence(ID3D12CommandQueue* targetQueue) : m_fenceValue(0), m_curFenceValue(0)
 	{
 		var device = r_graphicsCard[0]->GetDevice();
 		m_commandQueue = targetQueue;
@@ -16,15 +16,47 @@ namespace AnEngine::RenderCore
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
 #endif // _WIN32
+	}*/
+
+	Fence::Fence() : m_fenceValue(0), m_curFenceValue(0)
+	{
+		var device = r_graphicsCard[0]->GetDevice();
+		ThrowIfFailed(device->CreateFence(m_fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+#ifdef _WIN32
+		//m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		m_fenceEvent.Attach(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+		//if (m_fenceEvent == nullptr)
+		if (!m_fenceEvent.IsValid())
+		{
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
+#endif // _WIN32
 	}
 
 	Fence::~Fence()
 	{
 #ifdef _WIN32
-		CloseHandle(m_fenceEvent);
+		//CloseHandle(m_fenceEvent);
+		//m_fenceEvent.Get();
 #endif // _WIN32
 	}
 
+	ID3D12Fence* Fence::GetFence()
+	{
+		return m_fence.Get();
+	}
+
+	uint64_t Fence::GetFenceValue()
+	{
+		return m_fenceValue;
+	}
+
+	ID3D12Fence * Fence::operator->()
+	{
+		return m_fence.Get();
+	}
+
+	/*
 	void Fence::CpuWait(uint64_t semap)
 	{
 		//const uint64_t fenceValue = m_fenceValue;
@@ -59,17 +91,19 @@ namespace AnEngine::RenderCore
 		//m_commandQueue->Signal(m_fence.Get(), semap);
 		ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
 	}
-
+	*/
 	void Fence::WaitForGpu()
 	{
-		uint64_t fenceValue = Timer::GetTotalTicks();
-		ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fenceValue));
 
-		uint64_t yyyy = m_fence->GetCompletedValue();
-		if (yyyy < fenceValue)
+	}
+
+	void Fence::WaitForValue(uint64_t fenceValue)
+	{
+		if (m_fence->GetCompletedValue() < fenceValue)
 		{
-			ThrowIfFailed(m_fence->SetEventOnCompletion(fenceValue, m_fenceEvent));
-			WaitForSingleObject(m_fenceEvent, INFINITE);
+			m_fence->SetEventOnCompletion(fenceValue, m_fenceEvent.Get());
+			WaitForSingleObjectEx(m_fenceEvent.Get(), INFINITE, false);
 		}
+		m_fenceValue = fenceValue;
 	}
 }

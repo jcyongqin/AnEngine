@@ -1,84 +1,156 @@
 #include "Scene.h"
-#include"ObjectBehaviour.h"
+#include "ObjectBehaviour.h"
+#include "ThreadPool.hpp"
+#include "ManagedTask.hpp"
+#include "Canvas.h"
+#include "RenderCore.h"
+#include "StateMachine.h"
+#include "Camera.h"
+using namespace std;
+using namespace AnEngine::Utility;
+using namespace AnEngine::RenderCore;
 
 namespace AnEngine::Game
 {
 	void Scene::OnInit()
 	{
+		queue<GameObject*> q;
 		for (var i : m_objects)
 		{
-			i->OnInit();
+			q.push(i);
 		}
+		while (!q.empty())
+		{
+			var p = q.front();
+			q.pop();
+			for (var i : p->m_component)
+			{
+				i->OnInit();
+			}
+			for (var i : p->m_children)
+			{
+				q.push(i);
+			}
+		}
+		m_frameLoop = true;
 	}
 
 	void Scene::BeforeUpdate()
 	{
+		future<void> f1 = Utility::ThreadPool::Commit(StateMachine::StaticUpdate);
+		f1.wait();
 	}
 
 	void Scene::OnUpdate()
 	{
+		queue<GameObject*> q;
+		for (var item : m_objects)
+		{
+			q.push(item);
+		}
+		while (!q.empty())
+		{
+			var p = q.front();
+			q.pop();
+			for (var i : p->m_component)
+			{
+				i->BeforeUpdate();
+			}
+			for (var i : p->m_children)
+			{
+				q.push(i);
+			}
+		}
+
+		for (var item : m_objects)
+		{
+			q.push(item);
+		}
+		while (!q.empty())
+		{
+			var p = q.front();
+			q.pop();
+			for (var i : p->m_component)
+			{
+				if (is_same<decltype(*i), StateMachine>::value)
+				{
+					continue;
+				}
+				if (i->Active())
+				{
+					i->OnUpdate();
+				}
+			}
+			for (var i : p->m_children)
+			{
+				if (i->Active())
+				{
+					q.push(i);
+				}
+			}
+		}
+
+		for (var item : m_objects)
+		{
+			if (item->Active())
+			{
+				q.push(item);
+			}
+		}
+		while (!q.empty())
+		{
+			var p = q.front();
+			q.pop();
+			for (var i : p->m_component)
+			{
+				if (i->Active())
+				{
+					i->AfterUpdate();
+				}
+			}
+			for (var i : p->m_children)
+			{
+				if (i->Active())
+				{
+					q.push(i);
+				}
+			}
+		}
 	}
 
 	void Scene::AfterUpdate()
-	{
-	}
+	{ }
 
 	void Scene::OnRelease()
 	{
+		lock_guard<mutex> lock(m_mutex);
+		m_frameLoop = false;
 		for (var i : m_objects)
 		{
-			RemoveObject(dynamic_cast<GameObject*>(dynamic_cast<ObjectBehaviour*>(i)));
+			RemoveObject(i);
 		}
 	}
 
 	Scene::Scene(std::wstring _name) : name(_name)
 	{
+
 	}
 
 	void Scene::AddObject(GameObject* obj)
 	{
-		for (var i : obj->GetChildren())
-		{
-			AddObject(i);
-		}
-
-		var behaviour = dynamic_cast<ObjectBehaviour*>(obj);
-		for (var i : behaviour->GetComponents())
-		{
-			//lock_guard<std::recursive_mutex> lock(m_recursiveMutex);
-			lock_guard<mutex> lock(m_mutex);
-			if (i != nullptr && std::find(m_objects.begin(), m_objects.end(), i) == m_objects.end())
-			{
-				m_objects.emplace_back(dynamic_cast<BaseBehaviour*>(i));
-			}
-		}
-		//lock_guard<std::recursive_mutex> lock(m_recursiveMutex);
-		lock_guard<mutex> lock(m_mutex);
-		m_objects.emplace_back(dynamic_cast<BaseBehaviour*>(behaviour));
+		m_objects.emplace_back(obj);
 	}
 
 	void Scene::RemoveObject(GameObject* obj)
 	{
-		for (var i : obj->GetChildren())
-		{
-			RemoveObject(i);
-		}
-		var behaviour = dynamic_cast<ObjectBehaviour*>(obj);
-		for (var i : behaviour->GetComponents())
-		{
-			RemoveObject(i);
-		}
-		//lock_guard<std::recursive_mutex> lock(m_recursiveMutex);
-		lock_guard<mutex> lock(m_mutex);
 		for (var it = m_objects.begin(); it != m_objects.end(); ++it)
 		{
-			if (*it == behaviour)
+			if (*it == obj)
 			{
 				m_objects.erase(it);
 				break;
 			}
 		}
-		dynamic_cast<BaseBehaviour*>(behaviour)->OnRelease();
-		behaviour = nullptr;
+		delete obj;
 	}
 }

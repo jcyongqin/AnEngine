@@ -2,34 +2,35 @@
 #ifndef __ONWIND_H__
 #define __ONWIND_H__
 
-#include<iostream>
-#include<fstream>
-#include<ctime>
-#include<cstring>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
-#include<memory>
-#include<string>
-#include<vector>
-#include<functional>
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+#include <map>
+#include <functional>
 
 #define var auto
 #define let auto
+#define __FasterFunc(func) inline func __vectorcall
+#define procedure void
 
 #ifdef _WIN64
 
-#include<windows.h>
-#include<wrl.h>
-#include<tchar.h>
+#include <Windows.h>
+#include <wrl.h>
 
 #ifdef UNICODE
 
 #define SOLUTION_DIR L"C:\\Users\\PC\\Documents\\Code\\VSProject\\AnEngine"
 
 #define Strcpy(a,b) wcscpy_s(a, b)
-#define ERRORBLOCK(a) MessageBox(NULL, ToLPCWSTR(a), _T("Error"), 0)
-#define __FasterFunc(func) inline func __vectorcall
+#define ERRORBLOCK(a) MessageBox(NULL, ToLPCWSTR(a), L"Error", 0)
 
 #if defined _DEBUG || defined DEBUG
 #define ERRORBREAK(a) {\
@@ -44,32 +45,29 @@
 inline LPCWSTR ToLPCWSTR(std::string& orig)
 {
 	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
-	size_t convertedChars = 0;
+	//const size_t newsize = 100;
+	//size_t convertedChars = 0;
 	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(origsize - 1));
 	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
 	return wcstring;
 }
 
-inline LPCWSTR ToLPCWSTR(char* l)
+/*inline LPCWSTR ToLPCWSTR(const char* l)
 {
-	std::string orig(l);
-	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
+	//std::string orig(l);
+	size_t origsize = strlen(l);// orig.length() + 1;
+	//const size_t newsize = 100;
 	size_t convertedChars = 0;
-	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(orig.length() - 1));
-	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
+	wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * origsize);
+	mbstowcs_s(nullptr, wcstring, origsize, l, _TRUNCATE);
 	return wcstring;
-}
+}*/
 
 inline LPCWSTR ToLPCWSTR(const char* l)
 {
-	std::string orig(l);
-	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
-	size_t convertedChars = 0;
-	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(orig.length() - 1));
-	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
+	size_t origsize = strlen(l) + 1;
+	wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * origsize);
+	mbstowcs_s(nullptr, wcstring, origsize, l, _TRUNCATE);
 	return wcstring;
 }
 
@@ -94,7 +92,7 @@ inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
 	}
 }
 
-inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
+inline HRESULT ReadDataFromFile(LPCWSTR filename, std::byte** data, UINT* size)
 {
 	using namespace Microsoft::WRL;
 
@@ -123,7 +121,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 		throw std::exception();
 	}
 
-	*data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
+	*data = reinterpret_cast<std::byte*>(malloc(fileInfo.EndOfFile.LowPart));
 	*size = fileInfo.EndOfFile.LowPart;
 
 	if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
@@ -142,13 +140,22 @@ inline void ThrowIfFailed(HRESULT hr)
 	}
 }
 
-inline void ThrowIfFailed(HRESULT hr, std::function<void(void)> f)
+inline void ThrowIfFailed(HRESULT hr, const std::function<void(void)>& f)
 {
 	if (FAILED(hr))
 	{
 		f();
 		throw std::exception("一个奇怪的错误");
 	}
+}
+inline void ThrowIfFalse(bool value)
+{
+	ThrowIfFailed(value ? S_OK : E_FAIL);
+}
+
+inline void ThrowIfFalse(bool value, const wchar_t* msg)
+{
+	ThrowIfFailed(value ? S_OK : E_FAIL);
 }
 
 template <typename T>
@@ -224,6 +231,15 @@ __FasterFunc(float) Random(float a, float b)
 	return scale * range + a;
 }
 
+constexpr float operator "" f(unsigned long long i)
+{
+	return (float)i;
+}
+constexpr double operator "" lf(unsigned long long i)
+{
+	return (double)i;
+}
+
 struct NonCopyable
 {
 	NonCopyable() = default;
@@ -247,6 +263,25 @@ public:
 		}
 		return m_uniqueObj;
 	}
+};
+
+template<typename _T, typename _TBase>
+class IsDerived
+{
+public:
+	static int t(_TBase* base)
+	{
+		return 1;
+	}
+	static char t(void* t2)
+	{
+		return 0;
+	}
+
+	enum
+	{
+		Result = (sizeof(int) == sizeof(t((_T*)NULL))),
+	};
 };
 
 #endif // !__ONWIND_H__
