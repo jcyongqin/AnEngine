@@ -1,8 +1,10 @@
 #pragma once
 #ifndef __DMATH_HPP__
 #define __DMATH_HPP__
-#include<algorithm>
-#include<cmath>
+#include <algorithm>
+#include <cmath>
+#include "Vector.hpp"
+#include "Matrix.hpp"
 
 #ifdef max
 #undef max
@@ -80,7 +82,7 @@ namespace AnEngine::DMath
 
 	inline uint32_t CalculateConstantBufferByteSize(uint32_t byteSize)
 	{
-		return Align(byteSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+		return Align(byteSize, 0);
 	}
 }
 

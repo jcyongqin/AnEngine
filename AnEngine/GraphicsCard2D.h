@@ -11,14 +11,14 @@
 
 namespace AnEngine::RenderCore
 {
-	extern procedure InitializeSwapChain(int width, int height, HWND hwnd, DXGI_FORMAT dxgiFormat);
+	extern void InitializeSwapChain(int width, int height, HWND hwnd, DXGI_FORMAT dxgiFormat);
 }
 
 namespace AnEngine::RenderCore::UI
 {
 	class GraphicsCard2D
 	{
-		friend procedure::AnEngine::RenderCore::InitializeSwapChain(int width, int height, HWND hwnd, DXGI_FORMAT dxgiFormat);
+		friend void::AnEngine::RenderCore::InitializeSwapChain(int width, int height, HWND hwnd, DXGI_FORMAT dxgiFormat);
 
 		Microsoft::WRL::ComPtr<ID2D1Factory3> m_d2dFactory;
 		Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
@@ -33,7 +33,7 @@ namespace AnEngine::RenderCore::UI
 
 		Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;
 
-		procedure InitializeForText();
+		void InitializeForText();
 
 	public:
 		GraphicsCard2D();
@@ -51,7 +51,7 @@ namespace AnEngine::RenderCore::UI
 		ID2D1DeviceContext2* GetContext();
 
 		void CreateTextFormat(IDWriteTextFormat** format);
-		void CreateTextBrush(ID2D1SolidColorBrush** brush, const Resource::Color& color);
+		void CreateTextBrush(ID2D1SolidColorBrush** brush, const Color& color);
 		void DrawText1(const wchar_t* text, uint32_t length, IDWriteTextFormat* format, ID2D1Brush* brush);
 	};
 }

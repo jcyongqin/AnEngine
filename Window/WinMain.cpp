@@ -1,7 +1,6 @@
 #include"onwind.h"
 //#include"DrawLine.h"
 #include"NBody.h"
-#include"Driver.h"
 #include"ThreadPool.hpp"
 #include"Input.h"
 #include"Screen.h"
@@ -77,7 +76,7 @@ LRESULT WINAPI WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
 	DeleteFile(L"log.txt");
 	std::wstring windowTitle(L"AnEngine");
@@ -119,7 +118,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	Randomize();
 
-	AnEngine::Engine::GetInstance()->Initialize(window, hInstance, screenw, screenh);
+	AnEngine::Engine::Instance()->Initialize(window, hInstance, screenw, screenh);
 
 	//d3dApp->SetHwnd(window);
 	//d3dApp->OnInit();
@@ -146,7 +145,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//BaseInput::GetInstance()->Release();
-	Engine::GetInstance()->Release();
+	Engine::Instance()->Release();
 	//d3dApp->OnRelease();
 	UnregisterClass(wnd.lpszClassName, hInstance);
 	return 0;

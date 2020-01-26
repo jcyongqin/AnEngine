@@ -2,17 +2,15 @@
 #ifndef __OBJECTBEHAVIOUR_H__
 #define __OBJECTBEHAVIOUR_H__
 
-#include"BaseBehaviour.h"
-#include"GameObject.h"
-#include<condition_variable>
+#include "BaseBehaviour.h"
+#include "GameObject.h"
+#include <condition_variable>
 
 namespace AnEngine::Game
 {
-	class Scene;
-
-	class ObjectBehaviour : public BaseBehaviour//, public GameObject
+	class DLL_API ObjectBehaviour : public BaseBehaviour//, public GameObject
 	{
-		friend class Scene;
+		friend class Engine;
 		friend class GameObject;
 
 		// 通过 BaseBehaviour 继承
@@ -31,6 +29,7 @@ namespace AnEngine::Game
 	protected:
 		bool m_active;
 
+	public:
 		GameObject* gameObject;
 
 	protected:

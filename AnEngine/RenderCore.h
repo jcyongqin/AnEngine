@@ -41,6 +41,22 @@ namespace AnEngine::RenderCore::CommonState
 
 namespace AnEngine::RenderCore
 {
+	class GraphicsDevice : public Singleton<GraphicsDevice>
+	{
+		friend class Singleton<GraphicsDevice>;
+
+		std::vector<std::unique_ptr<GraphicsCard>> m_graphicsCard;
+		std::unique_ptr<UI::GraphicsCard2D> m_graphicsCard2D;
+
+		GraphicsDevice();
+
+	public:
+		GraphicsCard* Default()
+		{
+			return m_graphicsCard[0].get();
+		}
+	};
+
 	extern bool r_enableHDROutput;
 
 	extern std::vector<std::unique_ptr<GraphicsCard>> r_graphicsCard;
@@ -55,15 +71,15 @@ namespace AnEngine::RenderCore
 	//extern bool rrrr_runningFlag;
 	extern std::function<void(void)> R_GetGpuError;
 
-	procedure InitializeRender(HWND hwnd, int graphicCardCount = 1, bool isStable = false);
+	void InitializeRender(HWND hwnd, int graphicCardCount = 1, bool isStable = false);
 
-	//procedure CreateCommonState();
+	//void CreateCommonState();
 
-	procedure RenderColorBuffer(Resource::ColorBuffer* dstColorBuffer);
+	void RenderColorBuffer(Resource::ColorBuffer* dstColorBuffer);
 
-	procedure BlendBuffer(Resource::GpuResource* buffer);
+	void BlendBuffer(Resource::GpuResource* buffer);
 
-	procedure R_Present();
+	void R_Present();
 }
 
 
