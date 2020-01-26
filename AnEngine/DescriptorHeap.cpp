@@ -2,6 +2,7 @@
 #include "RenderCore.h"
 using namespace AnEngine::RenderCore::Resource;
 using namespace std;
+using namespace Microsoft::WRL;
 
 namespace AnEngine::RenderCore::Heap
 {
@@ -19,14 +20,14 @@ namespace AnEngine::RenderCore::Heap
 
 	DescriptorHandle::DescriptorHandle()
 	{
-		m_cpuHandle.ptr = GpuVirtualAddressUnknown;
-		m_gpuHandle.ptr = GpuVirtualAddressUnknown;
+		m_cpuHandle.ptr = S_GpuVirtualAddressUnknown;
+		m_gpuHandle.ptr = S_GpuVirtualAddressUnknown;
 	}
 
 	DescriptorHandle::DescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) :
 		m_cpuHandle(cpuHandle)
 	{
-		m_gpuHandle.ptr = GpuVirtualAddressUnknown;
+		m_gpuHandle.ptr = S_GpuVirtualAddressUnknown;
 	}
 
 	DescriptorHandle::DescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle) :
@@ -46,23 +47,23 @@ namespace AnEngine::RenderCore::Heap
 
 	bool DescriptorHandle::IsNull()
 	{
-		return m_cpuHandle.ptr == GpuVirtualAddressUnknown;
+		return m_cpuHandle.ptr == S_GpuVirtualAddressUnknown;
 	}
 
 	bool DescriptorHandle::IsShaderVisible() const
 	{
-		return m_gpuHandle.ptr != GpuVirtualAddressUnknown;
+		return m_gpuHandle.ptr != S_GpuVirtualAddressUnknown;
 	}
 
 	void DescriptorHandle::operator+=(int offsetScaledByDescriptorSize)
 	{
-		if (m_cpuHandle.ptr != GpuVirtualAddressUnknown)
+		if (m_cpuHandle.ptr != S_GpuVirtualAddressUnknown)
 		{
-			m_cpuHandle.ptr += offsetScaledByDescriptorSize;
+			m_cpuHandle.ptr += (uint64_t)offsetScaledByDescriptorSize;
 		}
-		if (m_gpuHandle.ptr != GpuVirtualAddressUnknown)
+		if (m_gpuHandle.ptr != S_GpuVirtualAddressUnknown)
 		{
-			m_gpuHandle.ptr += offsetScaledByDescriptorSize;
+			m_gpuHandle.ptr += (uint64_t)offsetScaledByDescriptorSize;
 		}
 	}
 
@@ -118,8 +119,8 @@ namespace AnEngine::RenderCore::Heap
 		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_currentHandle[type];
-		m_currentHandle[type].ptr += count * m_descriptorSize[type];
-		m_currentGpuHandle[type].ptr += count * m_descriptorSize[type];
+		m_currentHandle[type].ptr += (uint64_t)count * m_descriptorSize[type];
+		m_currentGpuHandle[type].ptr += (uint64_t)count * m_descriptorSize[type];
 		m_remainingFreeHandles[type] -= count;
 		return cpuHandle;
 	}
@@ -143,8 +144,8 @@ namespace AnEngine::RenderCore::Heap
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_currentHandle[type];
 		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_currentGpuHandle[type];
 		ID3D12DescriptorHeap* currHeap = m_currentHeap[type].Get();
-		m_currentHandle[type].ptr += count * m_descriptorSize[type];
-		m_currentGpuHandle[type].ptr += count * m_descriptorSize[type];
+		m_currentHandle[type].ptr += (uint64_t)count * m_descriptorSize[type];
+		m_currentGpuHandle[type].ptr += (uint64_t)count * m_descriptorSize[type];
 		m_remainingFreeHandles[type] -= count;
 		return { currHeap, cpuHandle ,gpuHandle };
 	}

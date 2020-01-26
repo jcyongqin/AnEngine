@@ -1,5 +1,10 @@
 #include "frameBuffering.h"
 
+using namespace Microsoft::WRL;
+using namespace DirectX;
+using namespace AnEngine;
+using namespace AnEngine::RenderCore;
+
 FrameBuffering::FrameBuffering(const HWND _hwnd, const UINT _width, const UINT _height) :
 	D3D12AppBase(_hwnd, _width, _height),
 	viewport(0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height)),
@@ -159,8 +164,8 @@ void FrameBuffering::InitializeAssets()
 	UINT compileFlags = 0;
 #endif
 	//auto l = GetAssetFullPath(_T("shaders.hlsl"));
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
 
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =

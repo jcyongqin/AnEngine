@@ -5,6 +5,7 @@
 #include "DTimer.h"
 using namespace AnEngine::RenderCore;
 using namespace AnEngine::RenderCore::Resource;
+using namespace Microsoft::WRL;
 
 namespace AnEngine::Game
 {
@@ -281,7 +282,7 @@ namespace AnEngine::Game
 
 		iList->ResourceBarrier(1, &commonToRenderTarget);
 
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_renderTarget->GetRTV());
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_renderTarget->GetRtv());
 		iList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 		iList->ClearRenderTargetView(rtvHandle, r_ClearColor_const_float, 0, nullptr);
 
@@ -307,7 +308,7 @@ namespace AnEngine::Game
 
 	void ParticlesRenderer::Update()
 	{
-		m_camera.OnUpdate(static_cast<float>(DTimer::GetInstance()->GetElapsedSeconds()));
+		m_camera.OnUpdate(static_cast<float>(DTimer::Instance()->GetElapsedSeconds()));
 
 		ConstantBufferGS vConstantBufferGS = {};
 		XMStoreFloat4x4(&vConstantBufferGS.worldViewProjection, XMMatrixMultiply(m_camera.GetViewMatrix(),

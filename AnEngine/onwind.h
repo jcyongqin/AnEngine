@@ -2,34 +2,36 @@
 #ifndef __ONWIND_H__
 #define __ONWIND_H__
 
-#include<iostream>
-#include<fstream>
-#include<ctime>
-#include<cstring>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
-#include<memory>
-#include<string>
-#include<vector>
-#include<functional>
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <functional>
 
 #define var auto
 #define let auto
+#define 令(a) auto a
+#define __FasterFunc(func) inline func __vectorcall
 
 #ifdef _WIN64
 
-#include<windows.h>
-#include<wrl.h>
-#include<tchar.h>
+#include <Windows.h>
+#include <wrl.h>
 
 #ifdef UNICODE
 
-#define SOLUTION_DIR L"C:\\Users\\PC\\Documents\\Code\\VSProject\\AnEngine"
+constexpr auto SOLUTION_DIR = L"C:\\Users\\PC\\Documents\\Code\\VSProject\\AnEngine";
 
 #define Strcpy(a,b) wcscpy_s(a, b)
-#define ERRORBLOCK(a) MessageBox(NULL, ToLPCWSTR(a), _T("Error"), 0)
-#define __FasterFunc(func) inline func __vectorcall
+#define ERRORBLOCK(a) MessageBox(NULL, ToLPCWSTR(a), L"Error", 0)
 
 #if defined _DEBUG || defined DEBUG
 #define ERRORBREAK(a) {\
@@ -41,36 +43,30 @@
 #endif // _DEBUG || DEBUG
 
 
+#define DLL_API __declspec(dllexport)
+
 inline LPCWSTR ToLPCWSTR(std::string& orig)
 {
 	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
-	size_t convertedChars = 0;
-	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(origsize - 1));
+	//const size_t newsize = 100;
+	//size_t convertedChars = 0;
+	wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * (origsize - 1));
 	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
 	return wcstring;
 }
 
-inline LPCWSTR ToLPCWSTR(char* l)
-{
-	std::string orig(l);
-	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
-	size_t convertedChars = 0;
-	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(orig.length() - 1));
-	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
-	return wcstring;
-}
 
 inline LPCWSTR ToLPCWSTR(const char* l)
 {
-	std::string orig(l);
-	size_t origsize = orig.length() + 1;
-	const size_t newsize = 100;
-	size_t convertedChars = 0;
-	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t) *(orig.length() - 1));
-	mbstowcs_s(nullptr, wcstring, origsize, orig.c_str(), _TRUNCATE);
+	size_t origsize = strlen(l) + 1;
+	wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * origsize);
+	mbstowcs_s(nullptr, wcstring, origsize, l, _TRUNCATE);
 	return wcstring;
+}
+
+inline std::string WStringToString(const std::wstring& wl)
+{
+
 }
 
 inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
@@ -94,10 +90,8 @@ inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
 	}
 }
 
-inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
+inline HRESULT ReadDataFromFile(LPCWSTR filename, std::byte** data, UINT* size)
 {
-	using namespace Microsoft::WRL;
-
 	CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
 	extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
 	extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
@@ -106,7 +100,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 	extendedParams.lpSecurityAttributes = nullptr;
 	extendedParams.hTemplateFile = nullptr;
 
-	Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
+	Microsoft::WRL::Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
 	if (file.Get() == INVALID_HANDLE_VALUE)
 	{
 		throw std::exception();
@@ -123,7 +117,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 		throw std::exception();
 	}
 
-	*data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
+	*data = reinterpret_cast<std::byte*>(malloc(fileInfo.EndOfFile.LowPart));
 	*size = fileInfo.EndOfFile.LowPart;
 
 	if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
@@ -142,7 +136,7 @@ inline void ThrowIfFailed(HRESULT hr)
 	}
 }
 
-inline void ThrowIfFailed(HRESULT hr, std::function<void(void)> f)
+inline void ThrowIfFailed(HRESULT hr, const std::function<void(void)>& f)
 {
 	if (FAILED(hr))
 	{
@@ -150,12 +144,14 @@ inline void ThrowIfFailed(HRESULT hr, std::function<void(void)> f)
 		throw std::exception("一个奇怪的错误");
 	}
 }
-
-template <typename T>
-inline T* SafeAcquire(T* newObject)
+inline void ThrowIfFalse(bool value)
 {
-	if (newObject != nullptr) ((IUnknown*)newObject)->AddRef();
-	return newObject;
+	ThrowIfFailed(value ? S_OK : E_FAIL);
+}
+
+inline void ThrowIfFalse(bool value, const wchar_t* msg)
+{
+	ThrowIfFailed(value ? S_OK : E_FAIL);
 }
 
 #else
@@ -182,46 +178,77 @@ struct Range
 {
 	T m_maxn, m_minn;
 
-	Range(const T& _minn, const T& _maxn) :maxn(_maxn), minn(_minn)
+	Range(const T& _minn, const T& _maxn) :m_maxn(_maxn), m_minn(_minn)
 	{
 		if (m_minn > m_maxn) throw std::exception("Min argument is greater than max argument");
 	}
 
 	bool Has(T& value)
 	{
-		if (value < minn) return false;
-		if (value > maxn) return false;
+		if (value < m_minn) return false;
+		if (value > m_maxn) return false;
 		return true;
 	}
 };
 
-__FasterFunc(void) Randomize()
+template<int Minn, int Maxn>
+struct Range1
+{
+	constexpr bool operator()(int value)
+	{
+		if (value < Minn) return false;
+		if (value > Maxn) return false;
+		return true;
+	}
+};
+
+template<int Maxn>
+struct Range0
+{
+	constexpr bool operator()(int value)
+	{
+		if (value < 0) return false;
+		if (value > Maxn) return false;
+		return true;
+	}
+};
+
+__forceinline void __vectorcall Randomize()
 {
 	srand((unsigned)time(nullptr));
 }
 
-__FasterFunc(int) Random(int a)
+__forceinline int __vectorcall Random(int a)
 {
 	return rand() % a;
 }
 
-__FasterFunc(float) Random()
+__forceinline float __vectorcall Random()
 {
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-__FasterFunc(int) Random(int a, int b)
+__forceinline int __vectorcall Random(int a, int b)
 {
 	int c = rand() % b;
 	while (c < a) c = rand() % b;
 	return c;
 }
 
-__FasterFunc(float) Random(float a, float b)
+__forceinline float __vectorcall Random(float a, float b)
 {
 	float scale = static_cast<float>(rand()) / RAND_MAX;
 	float range = b - a;
 	return scale * range + a;
+}
+
+constexpr float operator "" f(unsigned long long i)
+{
+	return (float)i;
+}
+constexpr double operator "" lf(unsigned long long i)
+{
+	return (double)i;
 }
 
 struct NonCopyable
@@ -233,13 +260,15 @@ struct NonCopyable
 	NonCopyable& operator=(const NonCopyable&) = delete;
 };
 
-template<typename T>
+template<class T>
 class Singleton : public NonCopyable
 {
 	inline static T* m_uniqueObj = nullptr;
 
+	template<class U> friend class Singleton;
+
 public:
-	static T* GetInstance()
+	__forceinline static T* Instance()
 	{
 		if (m_uniqueObj == nullptr)
 		{

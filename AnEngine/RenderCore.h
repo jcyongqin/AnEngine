@@ -2,26 +2,21 @@
 #ifndef __RENDERCORE_H__
 #define __RENDERCORE_H__
 
-#include"onwind.h"
-#include"DX.h"
-#include<mutex>
-#include<atomic>
-#include"ColorBuffer.h"
-#include"DescriptorHeap.hpp"
-#include"RenderCoreConstants.h"
-#include"GraphicCard.h"
-#include"RootSignature.h"
+#include "onwind.h"
+#include "DX.h"
+#include <mutex>
+#include <atomic>
+#include "ColorBuffer.h"
+#include "DescriptorHeap.hpp"
+#include "RenderCoreConstants.h"
+#include "GraphicsCard.h"
+#include "GraphicsCard2D.h"
+#include "RootSignature.h"
 
-#if defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
-#include <dxgi1_6.h>
-#else
-#include <dxgi1_4.h>	// For WARP
-#endif
-using namespace Microsoft::WRL;
-using namespace std;
 
 namespace AnEngine::RenderCore::Heap
 {
+	class DescriptorHeapAllocator;
 	extern DescriptorHeapAllocator r_h_heapDescAllocator;
 }
 
@@ -42,27 +37,50 @@ namespace AnEngine::RenderCore::CommonState
 
 namespace AnEngine::RenderCore
 {
+	class GraphicsDevice : public Singleton<GraphicsDevice>
+	{
+		friend class Singleton<GraphicsDevice>;
+
+		std::vector<std::unique_ptr<GraphicsCard>> m_graphicsCard;
+		std::unique_ptr<UI::GraphicsCard2D> m_graphicsCard2D;
+
+		GraphicsDevice();
+
+	public:
+		GraphicsCard* Default()
+		{
+			return m_graphicsCard[0].get();
+		}
+	};
+
 	extern bool r_enableHDROutput;
 
-	extern vector<unique_ptr<GraphicsCard>> r_graphicsCard;
-	//extern ComPtr<IDXGISwapChain3> r_swapChain_cp;
-	//extern Resource::ColorBuffer* r_displayPlane[r_SwapChainBufferCount_const];
+	extern std::vector<std::unique_ptr<GraphicsCard>> r_graphicsCard;
+	extern std::unique_ptr<UI::GraphicsCard2D> r_graphicsCard2D;
 	extern uint32_t r_frameIndex;
-	//extern RootSignature r_rootSignature;
+
 #ifdef _WIN32
 	extern HWND r_hwnd;
 #endif // _WIN32
-	//extern bool rrrr_runningFlag;
 	extern std::function<void(void)> R_GetGpuError;
 
 	void InitializeRender(HWND hwnd, int graphicCardCount = 1, bool isStable = false);
 
-	void CreateCommonState();
-
-
 	void RenderColorBuffer(Resource::ColorBuffer* dstColorBuffer);
 
 	void BlendBuffer(Resource::GpuResource* buffer);
+
+	void R_Present();
+
+	class DLL_API GpuContext : Singleton<GpuContext>
+	{
+		friend class Singleton<GpuContext>;
+
+		std::vector<std::unique_ptr<GraphicsCard>> m_devices;
+
+	public:
+
+	};
 }
 
 

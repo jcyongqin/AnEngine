@@ -1,6 +1,8 @@
 #include "DrawLine.h"
 using namespace std;
 using namespace AnEngine::RenderCore;
+using namespace Microsoft::WRL;
+using namespace DirectX;
 
 DrawLine::DrawLine(const HWND _hwnd, const UINT _width, const UINT _height) :
 	D3D12AppBase(_hwnd, _width, _height),
@@ -52,7 +54,7 @@ void DrawLine::OnUpdate()
 		UINT8* pVertexDataBegin;
 		CD3DX12_RANGE readRange(0, 0);
 		vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin));
-		memcpy(pVertexDataBegin, vertex.data(), sizeof(Vertex)*vertex.size());
+		memcpy(pVertexDataBegin, vertex.data(), sizeof(Vertex) * vertex.size());
 		vertexBuffer->Unmap(0, nullptr);
 	}
 }
@@ -179,8 +181,8 @@ void DrawLine::InitializeAssets()
 	UINT compileFlags = 0;
 #endif
 	//auto l = GetAssetFullPath(_T("shaders.hlsl"));
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
 
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -361,7 +363,7 @@ void DrawLineWithWu::OnUpdate()
 			(*vertex.begin()).color = { Random(0.0f,1.0f), Random(0.0f,1.0f),Random(0.0f,1.0f),1.0f };
 		}
 		else v.color = (*vertex.rbegin()).color;
-		auto pos = BaseInput::GetInstance()->GetM128MousePosition();
+		var pos = BaseInput::GetInstance()->GetM128MousePosition();
 
 		v.position = XMFLOAT3(pos.m128_f32[0], pos.m128_f32[1], 0.0f);
 		*(vertex.rbegin()) = v;
@@ -369,7 +371,7 @@ void DrawLineWithWu::OnUpdate()
 		UINT8* pVertexDataBegin;
 		CD3DX12_RANGE readRange(0, 0);
 		vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin));
-		memcpy(pVertexDataBegin, vertex.data(), sizeof(Vertex)*vertex.size());
+		memcpy(pVertexDataBegin, vertex.data(), sizeof(Vertex) * vertex.size());
 		vertexBuffer->Unmap(0, nullptr);
 	}
 }
@@ -503,8 +505,8 @@ void DrawLineWithWu::InitializeAssets()
 	UINT compileFlags = 0;
 #endif
 	//auto l = GetAssetFullPath(_T("shaders.hlsl"));
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
 
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -645,14 +647,14 @@ void DrawLineWithWu::WaitForRenderContext()
 {
 }
 
-float DrawTriangle::Cross(Vertex & a, Vertex & b)
+float DrawTriangle::Cross(Vertex& a, Vertex& b)
 {
 	return (a.position.x * b.position.y - b.position.x * a.position.y);
 }
 
 float DrawTriangle::Cross(Vertex& a, Vertex& b, Vertex& c)
 {
-	return ((a.position.x - c.position.x)*(b.position.y - c.position.y) - (b.position.x - c.position.x)*(a.position.y - c.position.y));
+	return ((a.position.x - c.position.x) * (b.position.y - c.position.y) - (b.position.x - c.position.x) * (a.position.y - c.position.y));
 }
 
 void DrawTriangle::Graham()
@@ -662,10 +664,10 @@ void DrawTriangle::Graham()
 	Vertex p1, p2;
 	sort(vertex.begin(), vertex.end(), [](Vertex& a, Vertex& b)->
 		bool
-	{
-		if (a.position.y == b.position.y) return a.position.x < b.position.x;
-		return a.position.y < b.position.y;
-	});
+		{
+			if (a.position.y == b.position.y) return a.position.x < b.position.x;
+			return a.position.y < b.position.y;
+		});
 	vertexIndexStack.push(0);
 	vertexIndexStack.push(1);
 	int a, b;
@@ -923,8 +925,8 @@ void DrawTriangle::InitializeAssets()
 	UINT compileFlags = 0;
 #endif
 	//auto l = GetAssetFullPath(_T("shaders.hlsl"));
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
-	D3DCompileFromFile(GetAssetFullPath(_T("framebuffer_shaders.hlsl")).c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
+	D3DCompileFromFile(GetAssetFullPath(L"framebuffer_shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
 
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =

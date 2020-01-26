@@ -5,7 +5,7 @@ using namespace AnEngine::RenderCore;
 
 namespace AnEngine::RenderCore::Resource
 {
-	VertexBuffer::VertexBuffer(D3D12_SUBRESOURCE_DATA & subData, size_t vertexDataSize, uint32_t standardVertexStride)
+	VertexBuffer::VertexBuffer(D3D12_SUBRESOURCE_DATA& subData, size_t vertexDataSize, uint32_t standardVertexStride)
 	{
 		var device = r_graphicsCard[0]->GetDevice();
 		var[commandList, commandAllocator] = GraphicsContext::GetOne();
@@ -76,15 +76,5 @@ namespace AnEngine::RenderCore::Resource
 		r_graphicsCard[0]->ExecuteSync(_countof(ppCommandLists), ppCommandLists);
 
 		GraphicsContext::Push(commandList, commandAllocator);
-	}
-
-	D3D12_VERTEX_BUFFER_VIEW VertexBuffer::GetVbv()
-	{
-		return m_vbv;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW VertexBuffer::GetIbv()
-	{
-		return m_ibv;
 	}
 }

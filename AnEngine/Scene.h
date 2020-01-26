@@ -2,47 +2,61 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
-#include"onwind.h"
-#include"BaseBehaviour.h"
-#include"GameObject.h"
-#include"Camera.h"
-#include<condition_variable>
+#include <condition_variable>
+#include "onwind.h"
+#include "BaseBehaviour.h"
+#include "GameObject.h"
+#include "ComponentGroup.hpp"
+#include "SystemBase.h"
+#include "Delegate.hpp"
+#include "ChunkAllocator.h"
 
 namespace AnEngine::Game
 {
-	class Scene : public BaseBehaviour//, public NonCopyable
+	// Scene仅作为GameObject的集合，同时待ECS完成后也是Entity或Component的集合。
+	class DLL_API Scene : public Object//, public NonCopyable
 	{
-		// Scene直接调度BaseBehaviour
-		friend class ::AnEngine::Driver;
-
-		std::vector<GameObject*> m_objects;
-		//std::vector<ObjectBehaviour*> m_objects;
-		//Camera* defaultCamera;
-
-		std::condition_variable m_cv;
+		std::queue<uint32_t> m_freeObjPos;			// 已经被删除掉的对象
+		std::map<size_t, void*> m_componentGroups;
+		std::deque<System::SystemBase*> m_systems;
 		std::mutex m_behaviourMutex;
-		uint32_t m_complateCount;
 
-		bool m_frameLoop;
-
-		//protected:
-		// 通过 BaseBehaviour 继承
-		virtual void OnInit() override;
-		virtual void BeforeUpdate() override;
-		virtual void OnUpdate() override;
-		virtual void AfterUpdate() override;
-		virtual void OnRelease() override;
+		// std::list<Archetype*> m_archetypeList;
+		// std::map<GameObject*, Memory::Chunk*> m_objs;
+		std::deque<GameObject*> m_objects;
 
 	public:
-		Scene(std::wstring _name);
-		~Scene() = default;
+		Scene(std::string&& _name);
+		Scene(const std::string& _name);
+		virtual ~Scene() = default;
 
-		std::wstring name;
+		Delegate<void> onLoad;
+		Delegate<void> onUnload;
 
-		void AddObject(GameObject* obj);
+		std::string name;
+
+		void AddToScene(GameObject* obj);
 		void RemoveObject(GameObject* obj);
+		const std::deque<GameObject*>& GetAllGameObjects() { return m_objects; }
 
-		void Wait();
+		template<typename _Ty>
+		void AddComponent(const GameObject* const gameObject)
+		{
+
+		}
+
+		template<typename T>
+		void CreateSystem()
+		{
+			if constexpr (std::is_base_of<System::SystemBase, T>::value == false) throw std::exception("这不是一个System");
+			for (var i : m_systems)
+			{
+				if (std::is_same<decltype(i), T>::value) throw std::exception("已经存在一个这种类型的System");
+			}
+			m_systems.emplace_back(new T());
+		}
+
+		const std::deque<System::SystemBase*>& GetAllSystems() { return m_systems; }
 	};
 }
 

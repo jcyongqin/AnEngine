@@ -7,10 +7,10 @@
 namespace AnEngine
 {
 #ifdef WIN32
-	class DTimer : public NonCopyable//::Singleton<DTimer>
+	class DTimer : public Singleton<DTimer>
 	{
-		static DTimer* m_uniqueObj;
-		//friend class ::Singleton<DTimer>;
+		//static DTimer* m_uniqueObj;
+		friend class Singleton<DTimer>;
 
 		LARGE_INTEGER m_qpcFrequency;
 		LARGE_INTEGER m_qpcLastTime;
@@ -36,7 +36,7 @@ namespace AnEngine
 		~DTimer();
 
 	public:
-		static DTimer* GetInstance();
+		//static DTimer* Instance();
 
 		const uint64_t GetElapsedTicks();
 		const double GetElapsedSeconds();
@@ -80,8 +80,9 @@ namespace AnEngine
 	class Timer
 	{
 	public:
-		static uint64_t _vectorcall GetTotalTicks();
-		static double _vectorcall GetTotalSeconds();
+		static inline uint64_t _vectorcall GetTotalTicks() { return DTimer::Instance()->GetTotalTicks(); }
+		static inline double Timer::GetTotalSeconds() { return DTimer::Instance()->GetTotalSeconds(); }
+		static inline uint32_t GetFPS() { return DTimer::Instance()->GetFramePerSecond(); }
 	};
 }
 #endif // !__DTIMER_H__

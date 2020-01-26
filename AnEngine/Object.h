@@ -2,15 +2,16 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 #include <string>
+#include "onwind.h"
 
 namespace AnEngine
 {
-	class Object
+	class DLL_API Object
 	{
 	public:
 		virtual ~Object();
 		virtual uint64_t GetHashCode();
-		virtual std::wstring ToString();
+		virtual std::string ToString();
 		template<typename T>
 		bool ReferenceEqual(T* rhs)
 		{

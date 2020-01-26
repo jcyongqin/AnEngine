@@ -8,17 +8,14 @@
 
 namespace AnEngine
 {
-	class Driver;
+	class Engine;
 }
 
 namespace AnEngine::Game
 {
 	class BaseBehaviour : public NonCopyable, public Object
 	{
-		//friend class ::AnEngine::Driver;
-		friend class Scene;
-		// virtual void OnRender() = 0;
-		// virtual void OnUpdate() = 0;
+		friend class Engine;
 
 		enum BehaviourState : int
 		{
@@ -34,7 +31,6 @@ namespace AnEngine::Game
 		virtual void OnRelease() = 0;
 
 	protected:
-		//std::recursive_mutex m_recursiveMutex;
 		std::mutex m_mutex;
 		bool m_released;
 

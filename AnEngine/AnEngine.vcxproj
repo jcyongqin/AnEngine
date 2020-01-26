@@ -23,7 +23,7 @@
     <ProjectGuid>{9839A870-23AE-44DD-95AA-857EC1119546}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>AnEngine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -41,10 +41,11 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -76,9 +77,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)PhyX\PhysX_3.4\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)3rdparty\PhyX\PhysX_3.4\Include;$(SolutionDir)3rdparty\OpenFBX;$(SolutionDir)3rdparty\Assimp\include;$(SolutionDir)3rdparty\Assimp\build\include;$(IncludePath)</IncludePath>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Build\lib\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -105,21 +111,28 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)PhyX\PhysX_3.4\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\PhyX\PhysX_3.4\Include;$(SolutionDir)3rdparty\OpenFBX;$(SolutionDir)3rdparty\Assimp\include;$(SolutionDir)3rdparty\Assimp\build\include</AdditionalIncludeDirectories>
       <EnableModules>true</EnableModules>
       <CompileAs>CompileAsCpp</CompileAs>
+      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <DisableSpecificWarnings>4455;</DisableSpecificWarnings>
+      <ControlFlowGuard>false</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -159,7 +172,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AllocatorBase.h" />
+    <ClInclude Include="Archetype.h" />
+    <ClInclude Include="ArchetypeManager.h" />
+    <ClInclude Include="AssetsConfig.h" />
     <ClInclude Include="BaseBehaviour.h" />
+    <ClInclude Include="Chunk.h" />
+    <ClInclude Include="ChunkAllocator.h" />
+    <ClInclude Include="Delegate.hpp" />
+    <ClInclude Include="FbxImporter.h" />
+    <ClInclude Include="IParallel.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Color.h" />
@@ -167,64 +189,99 @@
     <ClInclude Include="CommandContext.h" />
     <ClInclude Include="CommandList.h" />
     <ClInclude Include="CommandQueue.h" />
+    <ClInclude Include="ComponentData.h" />
+    <ClInclude Include="ComponentGroup.hpp" />
     <ClInclude Include="ComputeUnit.h" />
     <ClInclude Include="dds.h" />
     <ClInclude Include="DebugLog.h" />
+    <ClInclude Include="DeferredRenderPipeline.h" />
     <ClInclude Include="DepthBuffer.h" />
     <ClInclude Include="DescriptorHeap.hpp" />
     <ClInclude Include="DMath.hpp" />
-    <ClInclude Include="DrawCube.h" />
+    <ClInclude Include="DrawCube.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="DrawLine.h" />
-    <ClInclude Include="Driver.h" />
+    <ClInclude Include="DrawLine.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Engine.h" />
     <ClInclude Include="DTimer.h" />
     <ClInclude Include="DX.h" />
     <ClInclude Include="DynamicConstantBuffer.h" />
-    <ClInclude Include="ExecuteIndirect.h" />
-    <ClInclude Include="Fence.hpp" />
-    <ClInclude Include="frameBuffering.h" />
+    <ClInclude Include="ExecuteIndirect.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Fence.h" />
+    <ClInclude Include="FenceContext.h" />
+    <ClInclude Include="frameBuffering.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GpuBuffer.h" />
     <ClInclude Include="GpuResource.h" />
-    <ClInclude Include="GraphicCard.h" />
+    <ClInclude Include="GraphicsCard.h" />
+    <ClInclude Include="GroupWarper.h" />
     <ClInclude Include="Hash.hpp" />
-    <ClInclude Include="IEffect.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="ISerial.h" />
+    <ClInclude Include="Lighting.h" />
+    <ClInclude Include="LightingType.h" />
     <ClInclude Include="ManagedTask.hpp" />
-    <ClInclude Include="MatrixBuffer.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="MCamera.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshRendererComponent.h" />
     <ClInclude Include="MultiBuffer.hpp" />
-    <ClInclude Include="NBody.h" />
+    <ClInclude Include="NBody.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectBehaviour.h" />
     <ClInclude Include="onwind.h" />
     <ClInclude Include="ParticlesRenderer.h" />
-    <ClInclude Include="PhysicsCore.h" />
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PixelBuffer.h" />
     <ClInclude Include="Quaternion.hpp" />
+    <ClInclude Include="RayTracingHelper.hpp" />
+    <ClInclude Include="RaytracingHlslCompat.h" />
+    <ClInclude Include="RayTracingPipeline.h" />
     <ClInclude Include="RenderCore.h" />
     <ClInclude Include="RenderCoreConstants.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Rigidbody3D.h" />
+    <ClInclude Include="RenderPipeline.h" />
+    <ClInclude Include="RenderPipelineType.h" />
+    <ClInclude Include="AssetsDatabase.h" />
     <ClInclude Include="RootSignature.h" />
     <ClInclude Include="SampleAssets.h" />
     <ClInclude Include="SampleMeshRender.h" />
     <ClInclude Include="SampleParticles.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Screen.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="SystemBase.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureImporter.h" />
     <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="Transform.h" />
-    <ClInclude Include="UICore.h" />
+    <ClInclude Include="GraphicsCard2D.h" />
+    <ClInclude Include="TransformSystem.h" />
+    <ClInclude Include="UIComponent.h" />
+    <ClInclude Include="UIText.h" />
+    <ClInclude Include="UniqueId.hpp" />
     <ClInclude Include="Vector.hpp" />
     <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Archetype.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="Chunk.cpp" />
+    <ClCompile Include="ChunkAllocator.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="ColorBuffer.cpp" />
     <ClCompile Include="CommandContext.cpp" />
@@ -232,42 +289,66 @@
     <ClCompile Include="CommandQueue.cpp" />
     <ClCompile Include="ComputeUnit.cpp" />
     <ClCompile Include="DebugLog.cpp" />
+    <ClCompile Include="DeferredRenderPipeline.cpp" />
     <ClCompile Include="DepthBuffer.cpp" />
     <ClCompile Include="DescriptorHeap.cpp" />
-    <ClCompile Include="DrawCube.cpp" />
-    <ClCompile Include="DrawLine.cpp" />
-    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="DrawCube.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="DrawLine.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp" />
     <ClCompile Include="DTimer.cpp" />
     <ClCompile Include="DX.cpp" />
     <ClCompile Include="DynamicConstantBuffer.cpp" />
-    <ClCompile Include="ExecuteIndirect.cpp" />
+    <ClCompile Include="ExecuteIndirect.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="FbxImporter.cpp" />
     <ClCompile Include="Fence.cpp" />
-    <ClCompile Include="frameBuffering.cpp" />
+    <ClCompile Include="FenceContext.cpp" />
+    <ClCompile Include="frameBuffering.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GpuBuffer.cpp" />
     <ClCompile Include="GpuResource.cpp" />
-    <ClCompile Include="GraphicCard.cpp" />
+    <ClCompile Include="GraphicsCard.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Lighting.cpp" />
     <ClCompile Include="ManagedTask.cpp" />
-    <ClCompile Include="MatrixBuffer.cpp" />
     <ClCompile Include="MCamera.cpp" />
-    <ClCompile Include="NBody.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="NBody.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectBehaviour.cpp" />
     <ClCompile Include="ParticlesRenderer.cpp" />
     <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="PixelBuffer.cpp" />
+    <ClCompile Include="RayTracingPipeline.cpp" />
     <ClCompile Include="RenderCore.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="AssetsDatabase.cpp" />
     <ClCompile Include="RootSignature.cpp" />
     <ClCompile Include="SampleMeshRender.cpp" />
     <ClCompile Include="SampleParticles.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ShaderClass.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
+    <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureImporter.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
-    <ClCompile Include="UICore.cpp" />
+    <ClCompile Include="GraphicsCard2D.cpp" />
+    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="TransformSystem.cpp" />
+    <ClCompile Include="UIComponent.cpp" />
+    <ClCompile Include="UIText.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -338,6 +419,7 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy %(Identity) "$(OutDir)" &gt; NUL</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\%(Identity)</Outputs>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatOutputAsContent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(Identity) "$(OutDir)" &gt; NUL</Command>
     </CustomBuild>
     <CustomBuild Include="triangle_shaders.hlsl">
       <FileType>Document</FileType>
@@ -363,9 +445,9 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Assets\test.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GRS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">RootSignature</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">rootsig_1.1</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\Assets\test.hlsli">
@@ -374,6 +456,14 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">rootsig_1.1</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\3rdparty\Assimp\build\code\assimp.vcxproj">
+      <Project>{1448137c-d450-3e60-bdac-35ebaa50e6b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\OpenFBX\OpenFBX.vcxproj">
+      <Project>{7826ef0b-5a80-4c8b-86ff-9384f7f5cb2f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

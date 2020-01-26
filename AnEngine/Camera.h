@@ -2,16 +2,17 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-//#include "ComponentBehaviour.h"
 #include "ColorBuffer.h"
 #include "DepthBuffer.h"
 #include "ObjectBehaviour.h"
 #include "ShaderClass.h"
 #include "MultiBuffer.hpp"
+#include "DMath.hpp"
+#include "Matrix.hpp"
 
 namespace AnEngine::Game
 {
-	class Camera : public ObjectBehaviour
+	class DLL_API Camera : public ObjectBehaviour
 	{
 	public:
 		enum ClearFlags
@@ -29,11 +30,12 @@ namespace AnEngine::Game
 		float m_farDistance;
 		float m_viewField;
 
+		DMath::Matrix4x4 m_viewMatrix;
+		DMath::Matrix4x4 m_projectionMatrix;
+		DMath::Matrix4x4 m_nonJitteredProjectionMatrix;
+
 		ClearFlags m_clearFlag;
 		Color m_clearColor;
-
-		//RenderCore::Resource::ColorBuffer* m_colorBuffer;
-		//RenderCore::Resource::DepthBuffer* m_depthBuffer;
 
 		RenderCore::Resource::MultiBuffer<2, RenderCore::Resource::ColorBuffer> m_colorBuffers;
 		RenderCore::Resource::MultiBuffer<2, RenderCore::Resource::DepthBuffer> m_depthBuffers;
@@ -43,13 +45,6 @@ namespace AnEngine::Game
 		RenderCore::PixelShader* m_postProcessShader;
 
 	protected:
-		// 通过 BaseBehaviour 继承
-		/*virtual void OnInit() override;
-		virtual void BeforeUpdate() override;
-		virtual void Update() override;
-		virtual void AfterUpdate() override;
-		virtual void OnRelease() override;*/
-
 		virtual void Start() override;
 		virtual void OnActive() override;
 		virtual void Update() override;
@@ -60,23 +55,27 @@ namespace AnEngine::Game
 		void PostProcess();
 
 	public:
-		/*Camera(const std::wstring& name);
-		Camera(std::wstring&& name);
-		Camera(const std::wstring& name, ClearFlags clearFlag);
-		Camera(std::wstring&& name, ClearFlags clearFlag);*/
 		Camera();
 		Camera(ClearFlags clearFlag);
 		~Camera();
 
-		RenderCore::Resource::ColorBuffer* GetColorBuffer();
-		RenderCore::Resource::DepthBuffer* GetDepthBuffer();
+		RenderCore::Resource::ColorBuffer* GetColorBuffer() { return m_colorBuffers.GetBack(); }
+		RenderCore::Resource::DepthBuffer* GetDepthBuffer() { return m_depthBuffers.GetBack(); }
 
 		void ClearFlag(ClearFlags flag);
-		ClearFlags ClearFlag();
-		void ClearColor(Color color);
-		Color ClearColor();
+		ClearFlags ClearFlag() { return m_clearFlag; }
+		void ClearColor(Color color) { m_clearColor = color; }
+		Color ClearColor() { return m_clearColor; }
 
-		static ColorBuffer* FindForwordTarget(Vector3&& pos);
+		static ColorBuffer* FindForwordTarget(DMath::Vector3&& pos);
+
+		DMath::Matrix4x4& ViewMatrix() { return m_viewMatrix; }
+		DMath::Matrix4x4& ProjectionMatrix() { return m_projectionMatrix; }
+		DMath::Matrix4x4& NonJitteredProjectionMatrix() { return m_nonJitteredProjectionMatrix; }
+		void ResetProjectionMatrix();
+		void ViewMatrix(DMath::Matrix4x4& v) { m_viewMatrix = v; }
+		void ProjectionMatrix(DMath::Matrix4x4& p) { m_projectionMatrix = p; }
+		void NonJitteredProjectionMatrix(DMath::Matrix4x4& njp) { m_nonJitteredProjectionMatrix = njp; }
 	};
 }
 

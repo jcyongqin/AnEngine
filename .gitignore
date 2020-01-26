@@ -261,9 +261,10 @@ __pycache__/
 *.pyc
 
 # SubModule
-[Pp]hys[Xx]/
-PhysX/
-[Pp]hysX/
+3rdparty/
 
 # Assets
 *.bin
+
+Assets/
+Build/

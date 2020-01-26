@@ -7,7 +7,7 @@
 #include"VertexBuffer.h"
 #include"MCamera.h"
 #include"SampleAssets.h"
-#include"Fence.hpp"
+#include"Fence.h"
 
 namespace AnEngine::Game
 {
@@ -78,7 +78,7 @@ namespace AnEngine::Game
 		RenderCore::Fence* m_fence;
 
 	public:
-		SampleMeshRenderer(wstring&& fileName);
+		SampleMeshRenderer(std::wstring&& fileName);
 
 		// 通过 Renderer 继承
 		virtual void LoadAsset() override;

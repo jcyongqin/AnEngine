@@ -6,6 +6,7 @@
 #include "Screen.h"
 #include "Camera.h"
 #include "DTimer.h"
+#include "ThreadPool.hpp"
 using namespace std;
 using namespace AnEngine::RenderCore;
 
@@ -13,6 +14,7 @@ namespace AnEngine::Game
 {
 	void Renderer::Start()
 	{
+		ObjectBehaviour::Start();
 		LoadAsset();
 	}
 
@@ -23,11 +25,13 @@ namespace AnEngine::Game
 
 	void Renderer::Update()
 	{
-		m_renderTarget = Camera::FindForwordTarget(this->gameObject->transform.Position());
+		//m_renderTarget = Camera::FindForwordTarget(this->gameObject->transform.Position());
 	}
 
 	void Renderer::LateUpdate()
 	{
+		//m_renderTask = move(Utility::ThreadPool::Commit([this]()
+		//{
 		var[commandList, commandAllocator] = GraphicsContext::GetOne();
 		var iList = commandList->GetCommandList();
 		var iAllocator = commandAllocator->GetAllocator();
@@ -39,6 +43,8 @@ namespace AnEngine::Game
 		}
 
 		GraphicsContext::Push(commandList, commandAllocator);
+		//}));
+		//m_renderTask.wait();
 	}
 
 	Renderer::Renderer() : ObjectBehaviour()
@@ -75,7 +81,7 @@ namespace AnEngine::Game
 	{
 		var device = r_graphicsCard[0]->GetDevice();
 
-		m_rootSignature = new RootSignature();
+		//m_rootSignature = new RootSignature([]() {});
 
 		/*ComPtr<ID3DBlob> vertexShader;
 		ComPtr<ID3DBlob> pixelShader;
@@ -115,7 +121,7 @@ namespace AnEngine::Game
 
 		m_pso = new GraphicPSO();
 		m_pso->SetInputLayout(_countof(inputElementDescs), inputElementDescs);
-		m_pso->SetRootSignature(m_rootSignature->GetRootSignature());
+		//m_pso->SetRootSignature(m_rootSignature->GetRootSignature());
 		m_pso->SetVertexShader(m_vertexShader->GetByteCode());
 		m_pso->SetPixelShader(m_pixelShader->GetByteCode());
 		m_pso->SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_BACK, false,
@@ -161,10 +167,10 @@ namespace AnEngine::Game
 		iList->RSSetViewports(1, &m_viewport);
 		iList->RSSetScissorRects(1, &m_scissorRect);
 
-		iList->OMSetRenderTargets(1, &(m_renderTarget->GetRTV()), false, nullptr);
-		//iList->ClearRenderTargetView(m_renderTarget->GetRTV(), { 0.0f, 0.0f, 0, 1 }, 0, nullptr);
+		iList->OMSetRenderTargets(1, &(m_renderTarget->GetRtv()), false, nullptr);
+		//iList->ClearRenderTargetView(m_renderTarget->GetRtv(), { 0.0f, 0.0f, 0, 1 }, 0, nullptr);
 		//float color[4] = { 0, 0, 0, 1 };
-		//iList->ClearRenderTargetView(m_renderTarget->GetRTV(), color, 0, nullptr);
+		//iList->ClearRenderTargetView(m_renderTarget->GetRtv(), color, 0, nullptr);
 		iList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		iList->IASetVertexBuffers(0, 1, &(m_vertexBuffer->VertexBufferView()));
 		iList->DrawInstanced(3, 1, 0, 0);

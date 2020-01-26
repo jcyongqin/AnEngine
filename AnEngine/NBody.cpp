@@ -1,6 +1,7 @@
 #include "NBody.h"
 using namespace std;
 using namespace AnEngine::RenderCore;
+using namespace Microsoft::WRL;
 
 const float NBody::ParticleSpread = 400.0f;
 
@@ -48,9 +49,9 @@ void NBody::OnUpdate()
 {
 	WaitForSingleObjectEx(swapChainEvent, 100, false);
 	//timer.Tick(nullptr);
-	DTimer::GetInstance()->Tick(nullptr);
+	DTimer::Instance()->Tick(nullptr);
 	//camera.OnUpdate(static_cast<float>(timer.GetElapsedSeconds()));
-	camera.OnUpdate(static_cast<float>(DTimer::GetInstance()->GetElapsedSeconds()));
+	camera.OnUpdate(static_cast<float>(DTimer::Instance()->GetElapsedSeconds()));
 
 	ConstantBufferGS vConstantBufferGS = {};
 	XMStoreFloat4x4(&vConstantBufferGS.worldViewProjection, XMMatrixMultiply(camera.GetViewMatrix(), camera.GetProjectionMatrix(0.8f, aspectRatio, 1.0f, 5000.0f)));

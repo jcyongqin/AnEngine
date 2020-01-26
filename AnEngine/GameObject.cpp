@@ -1,66 +1,86 @@
 #include "GameObject.h"
 #include "ObjectBehaviour.h"
+#include "SceneManager.h"
 using namespace std;
 
 namespace AnEngine::Game
 {
-	//GameObject::GameObject(const std::wstring& _name) : gameObject(this), m_parentObject(nullptr), name(_name)
-	GameObject::GameObject(const std::wstring& _name) : m_parentObject(nullptr), name(_name)
+	GameObject::GameObject(const std::string& _name) : name(_name), m_active(true), m_id(-1)
 	{
 	}
 
-	GameObject::GameObject(std::wstring&& _name) : m_parentObject(nullptr), name(_name)
+	GameObject::GameObject(std::string&& _name) : name(_name), m_active(true), m_id(-1)
 	{
 	}
 
 	GameObject::~GameObject()
 	{
-		for (var i : m_children)
+		for (var i : m_behaviour)
 		{
 			delete i;
 		}
-		m_children.clear();
 	}
 
-	GameObject * GameObject::GetParent()
+	void GameObject::AddBehaviour(ObjectBehaviour* component)
 	{
-		return m_parentObject;
-	}
-
-	void GameObject::SetParent(GameObject* newParent)
-	{
-		m_parentObject = newParent;
-	}
-
-	vector<GameObject*> GameObject::GetChildren()
-	{
-		return m_children;
-	}
-
-	vector<ObjectBehaviour*> GameObject::GetComponents()
-	{
-		return m_component;
-	}
-
-	void GameObject::AddComponent(ObjectBehaviour* component)
-	{
-		lock_guard<mutex> lock(m_mutex);
 		component->gameObject = this;
-		//component->m_scene = this->m_scene;
-		m_component.emplace_back(component);
+		m_behaviour.emplace_back(component);
 	}
 
-	void GameObject::RemoveComponent(ObjectBehaviour* component)
+	std::shared_ptr<GameObject> GameObject::Create(const std::string& name)
 	{
-		lock_guard<mutex> lock(m_mutex);
-		for (var it = m_component.begin(); it != m_component.end(); ++it)
+		class MakeSharedHelper : public GameObject
 		{
-			if (*it == component)
+		public:
+			explicit MakeSharedHelper(const std::string& _name) :GameObject(_name) {}
+		};
+		return make_shared<MakeSharedHelper>(name);
+	}
+
+	std::shared_ptr<GameObject> GameObject::Create(std::string&& name)
+	{
+		class MakeSharedHelper : public GameObject
+		{
+		public:
+			explicit MakeSharedHelper(std::string&& _name) :GameObject(_name) {}
+		};
+		return make_shared<MakeSharedHelper>(move(name));
+	}
+
+	void GameObject::Destory(GameObject* gameObject)
+	{
+		if (gameObject->m_destoryed) throw exception("This object has already destoryed!");
+		gameObject->m_destoryed = true;
+	}
+
+	GameObject* GameObject::Find(const std::string& name)
+	{
+		/*var r = g_gameObjects.find(name);
+		if (r == g_gameObjects.end()) return nullptr;
+		return (*r).second;*/
+		var scene = SceneManager::ActiveScene();
+		scene->GetAllGameObjects();
+		return nullptr;
+	}
+
+	GameObject* GameObject::Find(std::string&& name)
+	{
+		/*var r = g_gameObjects.find(name);
+		if (r == g_gameObjects.end()) return nullptr;
+		return (*r).second;*/
+		return nullptr;
+	}
+
+	void GameObject::Active(bool b)
+	{
+		if (m_destoryed) throw exception("This object has already destoryed!");
+		/*lock_guard<mutex> lock(m_mutex);*/
+		m_active = b;
+		if (b)
+		{
+			for (var i : m_behaviour)
 			{
-				(*it)->OnRelease();
-				m_component.erase(it);
-				delete *it;
-				break;
+				i->OnActive();
 			}
 		}
 	}
